@@ -1,0 +1,10 @@
+version 0.0
+os: linux
+files: 
+  - source: /jekyll-site
+    destination: /home/ubuntu/
+hooks:
+  BeforeInstall:
+    - location: scripts/install.sh
+  ApplicationStart:
+    - location: scripts/run.sh
