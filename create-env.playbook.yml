@@ -15,7 +15,7 @@
       add_host: 
         name: "example.org"
         groups: nodes
-        ansible_host: 3.124.186.135
+        ansible_host: "{{trfrm.outputs.ips.value[0]}}"
         ansible_ssh_private_key_file: ~/cloud-lab/sshkey/server-key.pem
         ansible_user: ubuntu
 
@@ -34,8 +34,7 @@
           - zlib1g-dev
           - wget
         state: present
-    - name: Install deploy agent
-      command: sh ./script.sh
+
 
  
 

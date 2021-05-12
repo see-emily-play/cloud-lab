@@ -23,30 +23,17 @@ resource "aws_subnet" "subnet" {
 	map_public_ip_on_launch = true
 }
 
-resource "aws_security_group" "elb_sg" { 
-	name = "elb-sg"
-	vpc_id = aws_vpc.vpc.id
+resource "aws_security_group" "instance_sg" { 
+	name = "ubuntu-sg"
+	vpc_id = "${aws_vpc.vpc.id}"
 
 	ingress {
                 from_port = 80
                 to_port = 80
                 protocol = "tcp"
-                cidr_blocks = [ "0.0.0.0/0" ]
+                cidr_blocks = var.cidrs
         }
 
-	egress { 
-                from_port = 0
-                to_port = 0
-                protocol = "-1"
-                cidr_blocks = [ "0.0.0.0/0" ]
-        }
-
-}
-
-
-resource "aws_security_group" "instance_sg" { 
-	name = "ubuntu-sg"
-	vpc_id = "${aws_vpc.vpc.id}"
 
 	ingress { 
 		from_port = 22
@@ -55,13 +42,6 @@ resource "aws_security_group" "instance_sg" {
 		cidr_blocks = var.cidrs
 	}
 
-	ingress {
-                from_port = 80
-                to_port = 80
-                protocol = "tcp"
-                cidr_blocks = [ "10.0.0.0/16" ]
-        }
-
 	egress { 
                 from_port = 0
                 to_port = 0
@@ -71,20 +51,6 @@ resource "aws_security_group" "instance_sg" {
 
 }
 
-resource "aws_elb" "elb" {
-	name = "elb-new"
-	subnets = [ aws_subnet.subnet.id ]
-	security_groups = [ aws_security_group.elb_sg.id ]
-	instances = [ aws_instance.example.id ]
-
-	listener {
-		instance_port = 4000
-		instance_protocol = "http"
-		lb_port = 80
-		lb_protocol = "http"
-	}
-	
-} 
 
 resource "aws_instance" "example" {
 
@@ -110,13 +76,6 @@ resource "aws_instance" "example" {
 		user = "ubuntu"
 		host = self.public_ip
 	}
-
-#	user_data = <<-EOF
-		#!/bin/bash
-#		echo "Hello world" > index.html
-#		nohup busybox httpd -f -p 80 &
-#		EOF
-
 }
 
 resource "aws_codedeploy_app" "deploy_app" {
@@ -129,13 +88,6 @@ resource "aws_codedeploy_deployment_group" "deploy_group" {
 	deployment_group_name = "lab-group-new"
 	service_role_arn = var.arn
 	
-
-	load_balancer_info {
-		elb_info {
-			name = aws_elb.elb.name
-		}
-	}
-
 	ec2_tag_set {
 		ec2_tag_filter {
 			key = "Name"
