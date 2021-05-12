@@ -7,7 +7,7 @@ variable "key_path" {
 }
 
 variable "arn" {
-	default = "arn:aws:iam::789330820382:role/deploy-role"
+	default = ""
 }
 
 variable "role" {
